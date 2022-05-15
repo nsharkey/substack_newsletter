@@ -11,10 +11,10 @@ normalize <-
     round((x- min(x)) /(max(x)-min(x)), 5)
   }
 
-qbs_by_week <- read_parquet('posts/000_first_post/results/qbs_by_week.parquet')
-rbs_by_week <- read_parquet('posts/000_first_post/results/rbs_by_week.parquet')
-wrs_by_week <- read_parquet('posts/000_first_post/results/wrs_by_week.parquet')
-tes_by_week <- read_parquet('posts/000_first_post/results/tes_by_week.parquet')
+qbs_by_week <- read_parquet('posts/000_a_data_science_journey/results/qbs_by_week.parquet')
+rbs_by_week <- read_parquet('posts/000_a_data_science_journey/results/rbs_by_week.parquet')
+wrs_by_week <- read_parquet('posts/000_a_data_science_journey/results/wrs_by_week.parquet')
+tes_by_week <- read_parquet('posts/000_a_data_science_journey/results/tes_by_week.parquet')
 
 colnames(qbs_by_week)
 

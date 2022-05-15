@@ -59,7 +59,7 @@ fantasy_rb_te_wr_points <-
 
 # Weekly player stats 
 player_stats <- 
-  read_parquet('posts/000_first_post/data/player_stats.parquet') %>% 
+  read_parquet('posts/000_a_data_science_journey/data/player_stats.parquet') %>% 
   mutate(
     player_name = str_replace(player_name, '. ', '.'), 
     air_yards_share = if_else(is.na(air_yards_share) == TRUE, 0, air_yards_share)) %>% 
@@ -189,7 +189,7 @@ player_stats <-
 
 # Roster info for player position
 roster <- 
-  read_parquet('posts/000_first_post/data/roster.parquet') %>% 
+  read_parquet('posts/000_a_data_science_journey/data/roster.parquet') %>% 
   distinct(season, position, gsis_id)
 
 player_stats <- 
@@ -527,10 +527,10 @@ tes_by_week <-
     starts_with('receiving_'), 
     starts_with('rushing_'))
 
-write_parquet(qbs_by_week, 'posts/000_first_post/results/qbs_by_week.parquet')
-write_parquet(rbs_by_week, 'posts/000_first_post/results/rbs_by_week.parquet')
-write_parquet(wrs_by_week, 'posts/000_first_post/results/wrs_by_week.parquet')
-write_parquet(tes_by_week, 'posts/000_first_post/results/tes_by_week.parquet')
+write_parquet(qbs_by_week, 'posts/000_a_data_science_journey/results/qbs_by_week.parquet')
+write_parquet(rbs_by_week, 'posts/000_a_data_science_journey/results/rbs_by_week.parquet')
+write_parquet(wrs_by_week, 'posts/000_a_data_science_journey/results/wrs_by_week.parquet')
+write_parquet(tes_by_week, 'posts/000_a_data_science_journey/results/tes_by_week.parquet')
 
 # Positional stats and fantasy points by season
 qbs_by_season <- 
@@ -724,10 +724,10 @@ tes_by_season <-
     fantasy_points_espn_rank = min_rank(-fantasy_points_espn)) %>% 
   ungroup()
 
-write_parquet(qbs_by_season, 'posts/000_first_post/results/qbs_by_season.parquet')
-write_parquet(rbs_by_season, 'posts/000_first_post/results/rbs_by_season.parquet')
-write_parquet(wrs_by_season, 'posts/000_first_post/results/wrs_by_season.parquet')
-write_parquet(tes_by_season, 'posts/000_first_post/results/tes_by_season.parquet')
+write_parquet(qbs_by_season, 'posts/000_a_data_science_journey/results/qbs_by_season.parquet')
+write_parquet(rbs_by_season, 'posts/000_a_data_science_journey/results/rbs_by_season.parquet')
+write_parquet(wrs_by_season, 'posts/000_a_data_science_journey/results/wrs_by_season.parquet')
+write_parquet(tes_by_season, 'posts/000_a_data_science_journey/results/tes_by_season.parquet')
 
 
 rm(list = ls())
