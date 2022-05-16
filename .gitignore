@@ -1,8 +1,0 @@
-# Files
-.gitignore
-.DS_Store
-.Rhistory
-
-# Folders
-posts/000_a_data_science_journey/data/
-.Rproj.user
