@@ -6,7 +6,11 @@ library(arrow)
 
 rm(list = ls())
 
+# Fantasy league settings
+fantasy_teams <- 10 
 
+
+# Functions 
 fantasy_qb_points <- 
   function(df) {
     df <- 
@@ -56,6 +60,38 @@ fantasy_rb_te_wr_points <-
             receiving_fumbles * 1))
   }
 
+fantasy_points_next <- 
+  function(df) {
+    df <- 
+      df %>% 
+      arrange(
+        player_id, 
+        season_type, 
+        season) %>% 
+      group_by(
+        player_id, 
+        season_type) %>%
+      mutate(
+        fantasy_points_dk_next = lead(fantasy_points_dk, 1),
+        fantasy_points_espn_next = lead(fantasy_points_espn, 1),
+        fantasy_points_dk_above_rplcmnt_next = lead(fantasy_points_dk_above_rplcmnt, 1),
+        fantasy_points_espn_above_rplcmnt_next = lead(fantasy_points_espn_above_rplcmnt, 1)
+      ) %>%
+      ungroup() %>% 
+      select(
+        season_type, 
+        season, 
+        player_id, 
+        player_name, 
+        position, 
+        team, 
+        games, 
+        fantasy_points_dk_next, 
+        fantasy_points_espn_next, 
+        fantasy_points_dk_above_rplcmnt_next, 
+        fantasy_points_espn_above_rplcmnt_next, 
+        everything())
+  }
 
 # Weekly player stats 
 player_stats <- 
@@ -183,10 +219,6 @@ player_stats <-
       TRUE ~ player_name))
 
 
-
-
-
-
 # Roster info for player position
 roster <- 
   read_parquet('posts/000_a_data_science_journey/data/roster.parquet') %>% 
@@ -220,7 +252,7 @@ player_stats <-
 rm(roster)
 
 
-# Passing, rushing, and receiving stats
+# Team passing, rushing, and receiving stats
 team_summary_passing <- 
   player_stats %>% 
   group_by(
@@ -429,6 +461,9 @@ rbs_by_week <-
   player_stats %>% 
   filter(position %in% c('RB', 'FB')) %>% 
   mutate(
+    fullback = if_else(position == 'FB', 'Y', 'N'), 
+    position = 'RB') %>% 
+  mutate(
     season_type = as_factor(season_type), 
     player_id = as_factor(player_id), 
     player_name = as_factor(player_name), 
@@ -535,7 +570,6 @@ write_parquet(tes_by_week, 'posts/000_a_data_science_journey/results/tes_by_week
 # Positional stats and fantasy points by season
 qbs_by_season <- 
   qbs_by_week %>% 
-  # filter(player_name == 'M.Stafford') %>% 
   group_by(
     season_type, 
     season, 
@@ -584,7 +618,7 @@ qbs_by_season <-
   mutate(
     fantasy_points_dk_rank = min_rank(-fantasy_points_dk), 
     fantasy_points_espn_rank = min_rank(-fantasy_points_espn)) %>% 
-  ungroup()
+  ungroup() 
 
 rbs_by_season <- 
   rbs_by_week %>% 
@@ -630,7 +664,7 @@ rbs_by_season <-
   mutate(
     fantasy_points_dk_rank = min_rank(-fantasy_points_dk), 
     fantasy_points_espn_rank = min_rank(-fantasy_points_espn)) %>% 
-  ungroup()
+  ungroup() 
 
 wrs_by_season <- 
   wrs_by_week %>% 
@@ -676,7 +710,7 @@ wrs_by_season <-
   mutate(
     fantasy_points_dk_rank = min_rank(-fantasy_points_dk), 
     fantasy_points_espn_rank = min_rank(-fantasy_points_espn)) %>% 
-  ungroup()
+  ungroup() 
 
 tes_by_season <- 
   tes_by_week %>% 
@@ -722,8 +756,98 @@ tes_by_season <-
   mutate(
     fantasy_points_dk_rank = min_rank(-fantasy_points_dk), 
     fantasy_points_espn_rank = min_rank(-fantasy_points_espn)) %>% 
-  ungroup()
+  ungroup() 
 
+
+# Replacement values
+qbs_by_season <- 
+  qbs_by_season %>% 
+  inner_join(
+    qbs_by_season %>% 
+      filter(fantasy_points_dk_rank == fantasy_teams) %>% 
+      select(season_type, season, replacement_qb_dk = fantasy_points_dk)) %>% 
+  inner_join(
+    qbs_by_season %>% 
+      filter(fantasy_points_espn_rank == fantasy_teams) %>% 
+      select(season_type, season, replacement_qb_espn = fantasy_points_espn)) %>% 
+  mutate(
+    fantasy_points_dk_above_rplcmnt = fantasy_points_dk - replacement_qb_dk, 
+    fantasy_points_espn_above_rplcmnt = fantasy_points_espn - replacement_qb_espn) %>% 
+  select(
+    -replacement_qb_dk, 
+    -replacement_qb_espn)
+
+rbs_by_season <- 
+  rbs_by_season %>% 
+  inner_join(
+    rbs_by_season %>% 
+      filter(fantasy_points_dk_rank == fantasy_teams) %>% 
+      select(season_type, season, replacement_rb_dk = fantasy_points_dk)) %>% 
+  inner_join(
+    rbs_by_season %>% 
+      filter(fantasy_points_espn_rank == fantasy_teams) %>% 
+      select(season_type, season, replacement_rb_espn = fantasy_points_espn)) %>% 
+  mutate(
+    fantasy_points_dk_above_rplcmnt = fantasy_points_dk - replacement_rb_dk, 
+    fantasy_points_espn_above_rplcmnt = fantasy_points_espn - replacement_rb_espn) %>% 
+  select(
+    -replacement_rb_dk, 
+    -replacement_rb_espn)
+
+wrs_by_season <- 
+  wrs_by_season %>% 
+  inner_join(
+    wrs_by_season %>% 
+      filter(fantasy_points_dk_rank == fantasy_teams) %>% 
+      select(season_type, season, replacement_wr_dk = fantasy_points_dk)) %>% 
+  inner_join(
+    wrs_by_season %>% 
+      filter(fantasy_points_espn_rank == fantasy_teams) %>% 
+      select(season_type, season, replacement_wr_espn = fantasy_points_espn)) %>% 
+  mutate(
+    fantasy_points_dk_above_rplcmnt = fantasy_points_dk - replacement_wr_dk, 
+    fantasy_points_espn_above_rplcmnt = fantasy_points_espn - replacement_wr_espn) %>% 
+  select(
+    -replacement_wr_dk, 
+    -replacement_wr_espn)
+
+tes_by_season <- 
+  tes_by_season %>% 
+  inner_join(
+    tes_by_season %>% 
+      filter(fantasy_points_dk_rank == fantasy_teams) %>% 
+      select(season_type, season, replacement_te_dk = fantasy_points_dk)) %>% 
+  inner_join(
+    tes_by_season %>% 
+      filter(fantasy_points_espn_rank == fantasy_teams) %>% 
+      select(season_type, season, replacement_te_espn = fantasy_points_espn)) %>% 
+  mutate(
+    fantasy_points_dk_above_rplcmnt = fantasy_points_dk - replacement_te_dk, 
+    fantasy_points_espn_above_rplcmnt = fantasy_points_espn - replacement_te_espn) %>% 
+  select(
+    -replacement_te_dk, 
+    -replacement_te_espn)
+
+
+# Add next season's fantasy points 
+qbs_by_season <- 
+  qbs_by_season %>% 
+  fantasy_points_next()
+
+rbs_by_season <- 
+  rbs_by_season %>% 
+  fantasy_points_next()
+
+wrs_by_season <- 
+  wrs_by_season %>% 
+  fantasy_points_next()
+
+tes_by_season <- 
+  tes_by_season %>% 
+  fantasy_points_next()
+
+
+# Write to disk 
 write_parquet(qbs_by_season, 'posts/000_a_data_science_journey/results/qbs_by_season.parquet')
 write_parquet(rbs_by_season, 'posts/000_a_data_science_journey/results/rbs_by_season.parquet')
 write_parquet(wrs_by_season, 'posts/000_a_data_science_journey/results/wrs_by_season.parquet')
