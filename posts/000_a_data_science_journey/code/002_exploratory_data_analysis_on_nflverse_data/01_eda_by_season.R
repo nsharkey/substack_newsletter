@@ -34,7 +34,7 @@ tes_by_season <-
   filter(fantasy_points_dk_rank <= fantasy_teams * 3)
 
 
-# # Create EDA reports
+# # Create EDA reports from DataExplorer
 # create_report(qbs_by_season, output_file = 'eda_qbs_by_season', output_dir = 'posts/000_a_data_science_journey/results/')
 # create_report(rbs_by_season, output_file = 'eda_rbs_by_season', output_dir = 'posts/000_a_data_science_journey/results/')
 # create_report(wrs_by_season, output_file = 'eda_wrs_by_season', output_dir = 'posts/000_a_data_science_journey/results/')
@@ -46,24 +46,103 @@ tes_by_season <-
 
 colnames(qbs_by_season)
 
-qbs_by_season_qualified_dk <- 
+qbs_by_season_avg <- 
   qbs_by_season %>% 
-  # drop_na() %>%
-  filter(qualified_dk == 'Y')
+  group_by(season_n) %>% 
+  summarise(
+    players = length(unique(player_id)), 
+    fantasy_points_dk_mean = mean(fantasy_points_dk, na.rm = TRUE), 
+    fantasy_points_dk_median = median(fantasy_points_dk, na.rm = TRUE)) %>% 
+  ungroup()
+
+rbs_by_season_avg <- 
+  rbs_by_season %>% 
+  group_by(season_n) %>% 
+  summarise(
+    players = length(unique(player_id)), 
+    fantasy_points_dk_mean = mean(fantasy_points_dk, na.rm = TRUE), 
+    fantasy_points_dk_median = median(fantasy_points_dk, na.rm = TRUE), 
+    fantasy_points_dk_per_player = sum(fantasy_points_dk, na.rm = TRUE) / players) %>% 
+  ungroup()
+
+wrs_by_season_avg <- 
+  wrs_by_season %>% 
+  group_by(season_n) %>% 
+  summarise(
+    players = length(unique(player_id)), 
+    fantasy_points_dk_mean = mean(fantasy_points_dk, na.rm = TRUE), 
+    fantasy_points_dk_median = median(fantasy_points_dk, na.rm = TRUE)) %>% 
+  ungroup()
+
+tes_by_season_avg <- 
+  tes_by_season %>% 
+  group_by(season_n) %>% 
+  summarise(
+    players = length(unique(player_id)), 
+    fantasy_points_dk_mean = mean(fantasy_points_dk, na.rm = TRUE), 
+    fantasy_points_dk_median = median(fantasy_points_dk, na.rm = TRUE)) %>% 
+  ungroup()
+
+rbs_by_season_avg %>% 
+  filter(season_n <= 10) %>% 
+  ggplot(aes(x = season_n)) + geom_line(aes(y = fantasy_points_dk_per_player, color = 'blue')) + geom_line(aes(y = players, color = 'red'))
+
+ggplot(rbs_by_season_avg, aes(x=season_n)) +
+  
+  geom_bar( aes(y=players), stat="identity", size=.1, color="black", alpha=.4) + 
+  geom_line( aes(y=fantasy_points_dk_mean_per_player), size=2) + 
+  geom_line( aes(y=fantasy_points_dk_median_per_player), size=2) + 
+  scale_y_continuous(
+    
+    # Features of the first axis
+    name = "fantasy_points_dk_mean",
+    
+    # Add a second axis and specify its features
+    sec.axis = sec_axis(~., name="Price ($)")
+  )
+
+qbs_by_season_avg %>% 
+  ggplot(aes(x = season_n, y = players)) + 
+  geom_line()
+
+qbs_by_season_avg %>% 
+  filter(season_n <= 15) %>% 
+  ggplot(aes(x = season_n, y = fantasy_points_dk_mean)) +
+  geom_line()
+
+qbs_by_season_avg %>% 
+  ggplot(aes(x=season_n)) + 
+# ggplot(qbs_by_season_avg, aes(season_n)) +
+  
+  geom_line( aes(y=fantasy_points_dk_mean)) + 
+  geom_line( aes(y=players)) + # Divide by 10 to get the same range than the temperature
+  
+  scale_y_continuous(
+    
+    # Features of the first axis
+    name = "First Axis",
+    
+    # Add a second axis and specify its features
+    sec.axis = sec_axis(~., name="Second Axis")
+  )
+
+
+variables_to_ignore <- c(
+  'season_type', 
+  'season', 
+  'player_id', 
+  'player_name', 
+  'position', 
+  'team', 
+  'games', 
+  'fantasy_points_dk_next', 
+  'fantasy_points_espn_next', 
+  'fantasy_points_dk_above_rplcmnt_next', 
+  'fantasy_points_espn_above_rplcmnt_next')
 
 qbs_by_season_qualified_dk_hclust <- 
-  qbs_by_season_qualified_dk %>% 
-  select(
-  -season_type, 
-  -season, 
-  -player_id, 
-  -player_name, 
-  -position, 
-  -team, 
-  -fantasy_points_dk_next,
-  -fantasy_points_espn_next,
-  -fantasy_points_dk_above_rplcmnt_next,
-  -fantasy_points_espn_above_rplcmnt_next)
+  qbs_by_season %>% 
+  select(-c(variables_to_ignore))
 
 qbs_by_season_qualified_dk$cluster <- as.factor(kmeans(qbs_by_season_qualified_dk_hclust, centers = 5)$cluster)
 

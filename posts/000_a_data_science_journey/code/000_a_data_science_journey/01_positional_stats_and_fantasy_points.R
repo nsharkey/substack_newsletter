@@ -441,6 +441,12 @@ qbs_by_week <-
   mutate(
     fantasy_points_dk_rank = min_rank(-fantasy_points_dk), 
     fantasy_points_espn_rank = min_rank(-fantasy_points_espn)) %>% 
+  ungroup() %>%  
+  arrange(season, week) %>% 
+  group_by(player_id, season_type) %>% 
+  mutate(
+    week_n = 1:n(), 
+    week_last_n = n():1) %>% 
   ungroup() %>% 
   select(
     season_type, 
@@ -450,12 +456,15 @@ qbs_by_week <-
     player_name, 
     position, 
     team, 
+    week_n, 
+    week_last_n, 
     fantasy_points_dk, 
     fantasy_points_espn, 
     fantasy_points_dk_rank, 
     fantasy_points_espn_rank, 
     starts_with('passing_'), 
     starts_with('rushing_')) 
+
 
 rbs_by_week <- 
   player_stats %>% 
@@ -479,6 +488,12 @@ rbs_by_week <-
     fantasy_points_dk_rank = min_rank(-fantasy_points_dk), 
     fantasy_points_espn_rank = min_rank(-fantasy_points_espn)) %>% 
   ungroup() %>% 
+  arrange(season, week) %>% 
+  group_by(player_id, season_type) %>% 
+  mutate(
+    week_n = 1:n(), 
+    week_last_n = n():1) %>% 
+  ungroup() %>% 
   select(
     season_type, 
     season, 
@@ -487,12 +502,16 @@ rbs_by_week <-
     player_name, 
     position, 
     team, 
+    week_n, 
+    week_last_n, 
     fantasy_points_dk, 
     fantasy_points_espn, 
     fantasy_points_dk_rank, 
     fantasy_points_espn_rank, 
     starts_with('rushing_'), 
     starts_with('receiving_'))
+
+
 
 wrs_by_week <- 
   player_stats %>% 
@@ -513,6 +532,14 @@ wrs_by_week <-
     fantasy_points_dk_rank = min_rank(-fantasy_points_dk), 
     fantasy_points_espn_rank = min_rank(-fantasy_points_espn)) %>% 
   ungroup() %>% 
+  arrange(season, week) %>% 
+  group_by(
+    player_id, 
+    season_type) %>% 
+  mutate(
+    week_n = 1:n(), 
+    week_last_n = n():1) %>% 
+  ungroup() %>% 
   select(
     season_type, 
     season, 
@@ -521,6 +548,8 @@ wrs_by_week <-
     player_name, 
     position, 
     team, 
+    week_n, 
+    week_last_n, 
     fantasy_points_dk, 
     fantasy_points_espn, 
     fantasy_points_dk_rank, 
@@ -547,6 +576,12 @@ tes_by_week <-
     fantasy_points_dk_rank = min_rank(-fantasy_points_dk), 
     fantasy_points_espn_rank = min_rank(-fantasy_points_espn)) %>% 
   ungroup() %>% 
+  arrange(season, week) %>% 
+  group_by(player_id, season_type) %>% 
+  mutate(
+    week_n = 1:n(), 
+    week_last_n = n():1) %>% 
+  ungroup() %>% 
   select(
     season_type, 
     season, 
@@ -555,6 +590,8 @@ tes_by_week <-
     player_name, 
     position, 
     team, 
+    week_n, 
+    week_last_n, 
     fantasy_points_dk, 
     fantasy_points_espn, 
     fantasy_points_dk_rank, 
@@ -611,6 +648,14 @@ qbs_by_season <-
     rushing_epa = sum(rushing_epa, na.rm = TRUE), 
     rushing_2pt_conversions = sum(rushing_2pt_conversions, na.rm = TRUE)) %>% 
   ungroup() %>% 
+  arrange(season) %>% 
+  group_by(
+    player_id, 
+    season_type) %>% 
+  mutate(
+    season_n = 1:n(), 
+    season_last_n = n():1) %>% 
+  ungroup() %>% 
   group_by(
     season_type, 
     season,
@@ -656,6 +701,14 @@ rbs_by_season <-
     receiving_yards_after_catch = sum(receiving_yards_after_catch, na.rm = TRUE), 
     receiving_first_downs = sum(receiving_first_downs, na.rm = TRUE), 
     receiving_2pt_conversions = sum(receiving_2pt_conversions, na.rm = TRUE)) %>% 
+  ungroup() %>% 
+  arrange(season) %>% 
+  group_by(
+    player_id, 
+    season_type) %>% 
+  mutate(
+    season_n = 1:n(), 
+    season_last_n = n():1) %>% 
   ungroup() %>% 
   group_by(
     season_type, 
@@ -703,6 +756,14 @@ wrs_by_season <-
     rushing_epa = sum(rushing_epa, na.rm = TRUE), 
     rushing_2pt_conversions = sum(rushing_2pt_conversions, na.rm = TRUE)) %>% 
   ungroup() %>% 
+  arrange(season) %>% 
+  group_by(
+    player_id, 
+    season_type) %>% 
+  mutate(
+    season_n = 1:n(), 
+    season_last_n = n():1) %>% 
+  ungroup() %>% 
   group_by(
     season_type, 
     season,
@@ -748,6 +809,14 @@ tes_by_season <-
     rushing_first_downs = sum(rushing_first_downs, na.rm = TRUE), 
     rushing_epa = sum(rushing_epa, na.rm = TRUE), 
     rushing_2pt_conversions = sum(rushing_2pt_conversions, na.rm = TRUE)) %>% 
+  ungroup() %>% 
+  arrange(season) %>% 
+  group_by(
+    player_id, 
+    season_type) %>% 
+  mutate(
+    season_n = 1:n(), 
+    season_last_n = n():1) %>% 
   ungroup() %>% 
   group_by(
     season_type, 
