@@ -13,7 +13,7 @@ qbs_by_season_qualified <-
   filter(season_type == 'REG')
 
 
-training_frame <- 
+training_df <- 
   qbs_by_season_qualified %>% 
   filter(season <= 2020) %>% 
   drop_na(fantasy_points_dk_next) %>% 
@@ -31,13 +31,17 @@ training_frame <-
     -fantasy_teams, 
     -season_last_n)
 
-predicting_frame <- 
+# test_df <- 
+#   qbs_by_season_qualified %>% 
+#   filter(season == 2020)
+
+prediction_df <- 
   qbs_by_season_qualified %>% 
   filter(season == 2021)
 
 
 
-summary(lm(fantasy_points_dk_next ~ ., data = training_frame))
+summary(lm(fantasy_points_dk_next ~ ., data = training_df))
 
 
 
@@ -45,14 +49,18 @@ h2o.init()
 
 h2o.removeAll()
 
-training_frame_h2o <- as.h2o(training_frame)
+training_df_h2o <- as.h2o(training_df)
 
-predicting_frame_h2o <- as.h2o(predicting_frame)
+# test_df_h2o <- as.h2o(test_df)
+
+prediction_df_h2o <- as.h2o(prediction_df)
+
+prediction_df
 
 
 y <- 'fantasy_points_dk_next'
 x <- setdiff(
-  colnames(training_frame_h2o), 
+  colnames(training_df_h2o), 
   c(
     y, 
     'season', 
@@ -96,7 +104,7 @@ h2o_qbs_season_glm_grid <-
     x = x,
     y = y,
     grid_id = "h2o_qbs_season_glm_grid",
-    training_frame = training_frame_h2o,
+    training_frame = training_df_h2o,
     nfolds = grid_nfolds,
     fold_assignment = grid_fold_assignment,
     keep_cross_validation_predictions = TRUE,
@@ -169,7 +177,7 @@ h2o_qbs_season_drf_grid <-
     x = x,
     y = y,
     grid_id = "h2o_qbs_season_drf_grid",
-    training_frame = training_frame_h2o,
+    training_frame = training_df_h2o,
     nfolds = grid_nfolds,
     fold_assignment = grid_fold_assignment,
     keep_cross_validation_predictions = TRUE,
@@ -242,7 +250,7 @@ h2o_qbs_season_gbm_grid <-
     x = x,
     y = y,
     grid_id = "h2o_qbs_season_gbm_grid",
-    training_frame = training_frame_h2o,
+    training_frame = training_df_h2o,
     nfolds = grid_nfolds,
     fold_assignment = grid_fold_assignment,
     keep_cross_validation_predictions = TRUE,
@@ -330,7 +338,7 @@ h2o_qbs_season_dl_grid <-
     x = x, 
     y = y,
     grid_id = "h2o_qbs_season_dl_grid",
-    training_frame = training_frame_h2o,
+    training_frame = training_df_h2o,
     nfolds = grid_nfolds,
     fold_assignment = grid_fold_assignment,
     keep_cross_validation_predictions = TRUE,
@@ -378,49 +386,49 @@ h2o.saveModel(object = h2o_qbs_season_dl_grid_10, path = '000_a_data_science_jou
 
 #Metalearning 
 
-training_frame_h2o$glm01 <- h2o.predict(h2o_qbs_season_glm_grid_01, training_frame_h2o)$predict
-training_frame_h2o$glm02 <- h2o.predict(h2o_qbs_season_glm_grid_02, training_frame_h2o)$predict
-training_frame_h2o$glm03 <- h2o.predict(h2o_qbs_season_glm_grid_03, training_frame_h2o)$predict
-training_frame_h2o$glm04 <- h2o.predict(h2o_qbs_season_glm_grid_04, training_frame_h2o)$predict
-training_frame_h2o$glm05 <- h2o.predict(h2o_qbs_season_glm_grid_05, training_frame_h2o)$predict
-training_frame_h2o$glm06 <- h2o.predict(h2o_qbs_season_glm_grid_06, training_frame_h2o)$predict
-training_frame_h2o$glm07 <- h2o.predict(h2o_qbs_season_glm_grid_07, training_frame_h2o)$predict
-training_frame_h2o$glm08 <- h2o.predict(h2o_qbs_season_glm_grid_08, training_frame_h2o)$predict
-training_frame_h2o$glm09 <- h2o.predict(h2o_qbs_season_glm_grid_09, training_frame_h2o)$predict
-training_frame_h2o$glm10 <- h2o.predict(h2o_qbs_season_glm_grid_10, training_frame_h2o)$predict
+training_df_h2o$glm01 <- h2o.predict(h2o_qbs_season_glm_grid_01, training_df_h2o)$predict
+training_df_h2o$glm02 <- h2o.predict(h2o_qbs_season_glm_grid_02, training_df_h2o)$predict
+training_df_h2o$glm03 <- h2o.predict(h2o_qbs_season_glm_grid_03, training_df_h2o)$predict
+training_df_h2o$glm04 <- h2o.predict(h2o_qbs_season_glm_grid_04, training_df_h2o)$predict
+training_df_h2o$glm05 <- h2o.predict(h2o_qbs_season_glm_grid_05, training_df_h2o)$predict
+training_df_h2o$glm06 <- h2o.predict(h2o_qbs_season_glm_grid_06, training_df_h2o)$predict
+training_df_h2o$glm07 <- h2o.predict(h2o_qbs_season_glm_grid_07, training_df_h2o)$predict
+training_df_h2o$glm08 <- h2o.predict(h2o_qbs_season_glm_grid_08, training_df_h2o)$predict
+training_df_h2o$glm09 <- h2o.predict(h2o_qbs_season_glm_grid_09, training_df_h2o)$predict
+training_df_h2o$glm10 <- h2o.predict(h2o_qbs_season_glm_grid_10, training_df_h2o)$predict
 
-training_frame_h2o$drf01 <- h2o.predict(h2o_qbs_season_drf_grid_01, training_frame_h2o)$predict
-training_frame_h2o$drf02 <- h2o.predict(h2o_qbs_season_drf_grid_02, training_frame_h2o)$predict
-training_frame_h2o$drf03 <- h2o.predict(h2o_qbs_season_drf_grid_03, training_frame_h2o)$predict
-training_frame_h2o$drf04 <- h2o.predict(h2o_qbs_season_drf_grid_04, training_frame_h2o)$predict
-training_frame_h2o$drf05 <- h2o.predict(h2o_qbs_season_drf_grid_05, training_frame_h2o)$predict
-training_frame_h2o$drf06 <- h2o.predict(h2o_qbs_season_drf_grid_06, training_frame_h2o)$predict
-training_frame_h2o$drf07 <- h2o.predict(h2o_qbs_season_drf_grid_07, training_frame_h2o)$predict
-training_frame_h2o$drf08 <- h2o.predict(h2o_qbs_season_drf_grid_08, training_frame_h2o)$predict
-training_frame_h2o$drf09 <- h2o.predict(h2o_qbs_season_drf_grid_09, training_frame_h2o)$predict
-training_frame_h2o$drf10 <- h2o.predict(h2o_qbs_season_drf_grid_10, training_frame_h2o)$predict
+training_df_h2o$drf01 <- h2o.predict(h2o_qbs_season_drf_grid_01, training_df_h2o)$predict
+training_df_h2o$drf02 <- h2o.predict(h2o_qbs_season_drf_grid_02, training_df_h2o)$predict
+training_df_h2o$drf03 <- h2o.predict(h2o_qbs_season_drf_grid_03, training_df_h2o)$predict
+training_df_h2o$drf04 <- h2o.predict(h2o_qbs_season_drf_grid_04, training_df_h2o)$predict
+training_df_h2o$drf05 <- h2o.predict(h2o_qbs_season_drf_grid_05, training_df_h2o)$predict
+training_df_h2o$drf06 <- h2o.predict(h2o_qbs_season_drf_grid_06, training_df_h2o)$predict
+training_df_h2o$drf07 <- h2o.predict(h2o_qbs_season_drf_grid_07, training_df_h2o)$predict
+training_df_h2o$drf08 <- h2o.predict(h2o_qbs_season_drf_grid_08, training_df_h2o)$predict
+training_df_h2o$drf09 <- h2o.predict(h2o_qbs_season_drf_grid_09, training_df_h2o)$predict
+training_df_h2o$drf10 <- h2o.predict(h2o_qbs_season_drf_grid_10, training_df_h2o)$predict
 
-training_frame_h2o$gbm01 <- h2o.predict(h2o_qbs_season_gbm_grid_01, training_frame_h2o)$predict
-training_frame_h2o$gbm02 <- h2o.predict(h2o_qbs_season_gbm_grid_02, training_frame_h2o)$predict
-training_frame_h2o$gbm03 <- h2o.predict(h2o_qbs_season_gbm_grid_03, training_frame_h2o)$predict
-training_frame_h2o$gbm04 <- h2o.predict(h2o_qbs_season_gbm_grid_04, training_frame_h2o)$predict
-training_frame_h2o$gbm05 <- h2o.predict(h2o_qbs_season_gbm_grid_05, training_frame_h2o)$predict
-training_frame_h2o$gbm06 <- h2o.predict(h2o_qbs_season_gbm_grid_06, training_frame_h2o)$predict
-training_frame_h2o$gbm07 <- h2o.predict(h2o_qbs_season_gbm_grid_07, training_frame_h2o)$predict
-training_frame_h2o$gbm08 <- h2o.predict(h2o_qbs_season_gbm_grid_08, training_frame_h2o)$predict
-training_frame_h2o$gbm09 <- h2o.predict(h2o_qbs_season_gbm_grid_09, training_frame_h2o)$predict
-training_frame_h2o$gbm10 <- h2o.predict(h2o_qbs_season_gbm_grid_10, training_frame_h2o)$predict
+training_df_h2o$gbm01 <- h2o.predict(h2o_qbs_season_gbm_grid_01, training_df_h2o)$predict
+training_df_h2o$gbm02 <- h2o.predict(h2o_qbs_season_gbm_grid_02, training_df_h2o)$predict
+training_df_h2o$gbm03 <- h2o.predict(h2o_qbs_season_gbm_grid_03, training_df_h2o)$predict
+training_df_h2o$gbm04 <- h2o.predict(h2o_qbs_season_gbm_grid_04, training_df_h2o)$predict
+training_df_h2o$gbm05 <- h2o.predict(h2o_qbs_season_gbm_grid_05, training_df_h2o)$predict
+training_df_h2o$gbm06 <- h2o.predict(h2o_qbs_season_gbm_grid_06, training_df_h2o)$predict
+training_df_h2o$gbm07 <- h2o.predict(h2o_qbs_season_gbm_grid_07, training_df_h2o)$predict
+training_df_h2o$gbm08 <- h2o.predict(h2o_qbs_season_gbm_grid_08, training_df_h2o)$predict
+training_df_h2o$gbm09 <- h2o.predict(h2o_qbs_season_gbm_grid_09, training_df_h2o)$predict
+training_df_h2o$gbm10 <- h2o.predict(h2o_qbs_season_gbm_grid_10, training_df_h2o)$predict
 
-training_frame_h2o$dl01 <- h2o.predict(h2o_qbs_season_dl_grid_01, training_frame_h2o)$predict
-training_frame_h2o$dl02 <- h2o.predict(h2o_qbs_season_dl_grid_02, training_frame_h2o)$predict
-training_frame_h2o$dl03 <- h2o.predict(h2o_qbs_season_dl_grid_03, training_frame_h2o)$predict
-training_frame_h2o$dl04 <- h2o.predict(h2o_qbs_season_dl_grid_04, training_frame_h2o)$predict
-training_frame_h2o$dl05 <- h2o.predict(h2o_qbs_season_dl_grid_05, training_frame_h2o)$predict
-training_frame_h2o$dl06 <- h2o.predict(h2o_qbs_season_dl_grid_06, training_frame_h2o)$predict
-training_frame_h2o$dl07 <- h2o.predict(h2o_qbs_season_dl_grid_07, training_frame_h2o)$predict
-training_frame_h2o$dl08 <- h2o.predict(h2o_qbs_season_dl_grid_08, training_frame_h2o)$predict
-training_frame_h2o$dl09 <- h2o.predict(h2o_qbs_season_dl_grid_09, training_frame_h2o)$predict
-training_frame_h2o$dl10 <- h2o.predict(h2o_qbs_season_dl_grid_10, training_frame_h2o)$predict
+training_df_h2o$dl01 <- h2o.predict(h2o_qbs_season_dl_grid_01, training_df_h2o)$predict
+training_df_h2o$dl02 <- h2o.predict(h2o_qbs_season_dl_grid_02, training_df_h2o)$predict
+training_df_h2o$dl03 <- h2o.predict(h2o_qbs_season_dl_grid_03, training_df_h2o)$predict
+training_df_h2o$dl04 <- h2o.predict(h2o_qbs_season_dl_grid_04, training_df_h2o)$predict
+training_df_h2o$dl05 <- h2o.predict(h2o_qbs_season_dl_grid_05, training_df_h2o)$predict
+training_df_h2o$dl06 <- h2o.predict(h2o_qbs_season_dl_grid_06, training_df_h2o)$predict
+training_df_h2o$dl07 <- h2o.predict(h2o_qbs_season_dl_grid_07, training_df_h2o)$predict
+training_df_h2o$dl08 <- h2o.predict(h2o_qbs_season_dl_grid_08, training_df_h2o)$predict
+training_df_h2o$dl09 <- h2o.predict(h2o_qbs_season_dl_grid_09, training_df_h2o)$predict
+training_df_h2o$dl10 <- h2o.predict(h2o_qbs_season_dl_grid_10, training_df_h2o)$predict
 
 
 
@@ -472,7 +480,7 @@ h2o_qbs_season_meta_grid <-
       'dl10'), 
     y = y,
     grid_id = "h2o_qbs_season_meta_grid",
-    training_frame = training_frame_h2o,
+    training_frame = training_df_h2o,
     nfolds = grid_nfolds,
     fold_assignment = grid_fold_assignment,
     keep_cross_validation_predictions = TRUE,
@@ -505,7 +513,7 @@ h2o_qbs_season_meta_grid_10 <- h2o.getModel(h2o_qbs_season_meta_grid_perf@model_
 # Get performance of best model 
 h2o_qbs_season_meta_grid_01_var_imp <- as.data.frame(h2o.varimp(h2o_qbs_season_meta_grid_01))
 
-write_csv(h2o_qbs_season_meta_grid_01_var_imp, 'models/h2o_qbs_season_meta_grid_01_var_imp.csv')
+# write_csv(h2o_qbs_season_meta_grid_01_var_imp, 'models/h2o_qbs_season_meta_grid_01_var_imp.csv')
 
 
 # Save the best models
@@ -535,14 +543,61 @@ h2o.saveModelDetails(object = h2o_qbs_season_meta_grid_10, path = '000_a_data_sc
 
 
 
-training_frame_h2o$meta01 <- h2o.predict(h2o_qbs_season_meta_grid_01, training_frame_h2o)$predict
+training_df_h2o$meta01 <- h2o.predict(h2o_qbs_season_meta_grid_01, training_df_h2o)$predict
+
+
+
+
+prediction_df_h2o$glm01 <- h2o.predict(h2o_qbs_season_glm_grid_01, prediction_df_h2o)$predict
+prediction_df_h2o$glm02 <- h2o.predict(h2o_qbs_season_glm_grid_02, prediction_df_h2o)$predict
+prediction_df_h2o$glm03 <- h2o.predict(h2o_qbs_season_glm_grid_03, prediction_df_h2o)$predict
+prediction_df_h2o$glm04 <- h2o.predict(h2o_qbs_season_glm_grid_04, prediction_df_h2o)$predict
+prediction_df_h2o$glm05 <- h2o.predict(h2o_qbs_season_glm_grid_05, prediction_df_h2o)$predict
+prediction_df_h2o$glm06 <- h2o.predict(h2o_qbs_season_glm_grid_06, prediction_df_h2o)$predict
+prediction_df_h2o$glm07 <- h2o.predict(h2o_qbs_season_glm_grid_07, prediction_df_h2o)$predict
+prediction_df_h2o$glm08 <- h2o.predict(h2o_qbs_season_glm_grid_08, prediction_df_h2o)$predict
+prediction_df_h2o$glm09 <- h2o.predict(h2o_qbs_season_glm_grid_09, prediction_df_h2o)$predict
+prediction_df_h2o$glm10 <- h2o.predict(h2o_qbs_season_glm_grid_10, prediction_df_h2o)$predict
+
+prediction_df_h2o$drf01 <- h2o.predict(h2o_qbs_season_drf_grid_01, prediction_df_h2o)$predict
+prediction_df_h2o$drf02 <- h2o.predict(h2o_qbs_season_drf_grid_02, prediction_df_h2o)$predict
+prediction_df_h2o$drf03 <- h2o.predict(h2o_qbs_season_drf_grid_03, prediction_df_h2o)$predict
+prediction_df_h2o$drf04 <- h2o.predict(h2o_qbs_season_drf_grid_04, prediction_df_h2o)$predict
+prediction_df_h2o$drf05 <- h2o.predict(h2o_qbs_season_drf_grid_05, prediction_df_h2o)$predict
+prediction_df_h2o$drf06 <- h2o.predict(h2o_qbs_season_drf_grid_06, prediction_df_h2o)$predict
+prediction_df_h2o$drf07 <- h2o.predict(h2o_qbs_season_drf_grid_07, prediction_df_h2o)$predict
+prediction_df_h2o$drf08 <- h2o.predict(h2o_qbs_season_drf_grid_08, prediction_df_h2o)$predict
+prediction_df_h2o$drf09 <- h2o.predict(h2o_qbs_season_drf_grid_09, prediction_df_h2o)$predict
+prediction_df_h2o$drf10 <- h2o.predict(h2o_qbs_season_drf_grid_10, prediction_df_h2o)$predict
+
+prediction_df_h2o$gbm01 <- h2o.predict(h2o_qbs_season_gbm_grid_01, prediction_df_h2o)$predict
+prediction_df_h2o$gbm02 <- h2o.predict(h2o_qbs_season_gbm_grid_02, prediction_df_h2o)$predict
+prediction_df_h2o$gbm03 <- h2o.predict(h2o_qbs_season_gbm_grid_03, prediction_df_h2o)$predict
+prediction_df_h2o$gbm04 <- h2o.predict(h2o_qbs_season_gbm_grid_04, prediction_df_h2o)$predict
+prediction_df_h2o$gbm05 <- h2o.predict(h2o_qbs_season_gbm_grid_05, prediction_df_h2o)$predict
+prediction_df_h2o$gbm06 <- h2o.predict(h2o_qbs_season_gbm_grid_06, prediction_df_h2o)$predict
+prediction_df_h2o$gbm07 <- h2o.predict(h2o_qbs_season_gbm_grid_07, prediction_df_h2o)$predict
+prediction_df_h2o$gbm08 <- h2o.predict(h2o_qbs_season_gbm_grid_08, prediction_df_h2o)$predict
+prediction_df_h2o$gbm09 <- h2o.predict(h2o_qbs_season_gbm_grid_09, prediction_df_h2o)$predict
+prediction_df_h2o$gbm10 <- h2o.predict(h2o_qbs_season_gbm_grid_10, prediction_df_h2o)$predict
+
+prediction_df_h2o$dl01 <- h2o.predict(h2o_qbs_season_dl_grid_01, prediction_df_h2o)$predict
+prediction_df_h2o$dl02 <- h2o.predict(h2o_qbs_season_dl_grid_02, prediction_df_h2o)$predict
+prediction_df_h2o$dl03 <- h2o.predict(h2o_qbs_season_dl_grid_03, prediction_df_h2o)$predict
+prediction_df_h2o$dl04 <- h2o.predict(h2o_qbs_season_dl_grid_04, prediction_df_h2o)$predict
+prediction_df_h2o$dl05 <- h2o.predict(h2o_qbs_season_dl_grid_05, prediction_df_h2o)$predict
+prediction_df_h2o$dl06 <- h2o.predict(h2o_qbs_season_dl_grid_06, prediction_df_h2o)$predict
+prediction_df_h2o$dl07 <- h2o.predict(h2o_qbs_season_dl_grid_07, prediction_df_h2o)$predict
+prediction_df_h2o$dl08 <- h2o.predict(h2o_qbs_season_dl_grid_08, prediction_df_h2o)$predict
+prediction_df_h2o$dl09 <- h2o.predict(h2o_qbs_season_dl_grid_09, prediction_df_h2o)$predict
+prediction_df_h2o$dl10 <- h2o.predict(h2o_qbs_season_dl_grid_10, prediction_df_h2o)$predict
 
 
 run_length <- toc()
 
 
 
-training_frame_h2o %>% 
+prediction_df_h2o %>% 
   as.data.frame() %>% 
   select(
     season, 
@@ -553,33 +608,35 @@ training_frame_h2o %>%
     fantasy_points_actual = fantasy_points_dk_next, 
     fantasy_points_predicted_meta01 = meta01, 
     fantasy_points_predicted_gbm01 = gbm01) -> 
-  predictions 
+  test_df_predictions 
 
 
-predictions %>% 
+test_df_predictions %>% 
   ggplot(aes(x = fantasy_points_actual, y = fantasy_points_predicted_meta01)) + 
   geom_jitter() + 
   xlim(0,500) + 
   ylim(0,500) 
 
 
-predictions %>% 
+test_df_predictions %>% 
   ggplot(aes(x = fantasy_points_actual, y = fantasy_points_predicted_gbm01)) + 
   geom_jitter() + 
   xlim(0,500) + 
   ylim(0,500) 
 
 
+ajksd <- h2o.performance(h2o_qbs_season_meta_grid_01, test_df_h2o)
 
+ajksd <- h2o.performance(h2o_qbs_season_glm_grid_01, test_df_h2o)
 
 
 
 # LIME 
 
 # vip(h2o_qbs_season_drf_grid_01)
-# h2o.partialPlot(h2o_qbs_season_drf_grid_01, data = training_frame_h2o, cols = "Lender_Fee")
+# h2o.partialPlot(h2o_qbs_season_drf_grid_01, data = training_df_h2o, cols = "Lender_Fee")
 # 
-# qbs_season_df <- as.data.frame(training_frame_h2o)
+# qbs_season_df <- as.data.frame(training_df_h2o)
 # 
 # h2o_qbs_season_drf_grid_01_explainer <- 
 #   lime(
@@ -600,10 +657,10 @@ predictions %>%
 #   ggtitle("drf")
 
 
-training_frame_h2o <- 
+training_df_h2o <- 
   h2o.cbind(
-    h2o.predict(h2o_qbs_season_glm_grid_01, training_frame_h2o), 
-    training_frame_h2o)
+    h2o.predict(h2o_qbs_season_glm_grid_01, training_df_h2o), 
+    training_df_h2o)
 
 # Train and validate a grid of  
 h2o_qbs_season_lime_drf_grid <- 
@@ -612,7 +669,7 @@ h2o_qbs_season_lime_drf_grid <-
     x = x, 
     y = 'predict',
     grid_id = "h2o_qbs_season_lime_drf_grid",
-    training_frame = training_frame_h2o,
+    training_frame = training_df_h2o,
     nfolds = grid_nfolds,
     fold_assignment = grid_fold_assignment,
     keep_cross_validation_predictions = TRUE,
