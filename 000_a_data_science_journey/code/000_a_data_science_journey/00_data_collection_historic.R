@@ -4,6 +4,9 @@ library(tidyverse)
 library(arrow)
 
 
+rm(list = ls())
+
+
 # Historical Seasons
 seasons <- 1999:2020
 
@@ -22,7 +25,7 @@ for (s in 1:length(seasons)) {
   
 }
 
-write_parquet(pbp, 'posts/000_a_data_science_journey/data/historic/pbp_historic.parquet')
+write_parquet(pbp, '000_a_data_science_journey/data/historic/pbp_historic.parquet')
 
 
 # Player Stats by Week 
@@ -43,7 +46,7 @@ for (s in 1:length(seasons)) {
   
 }
 
-write_parquet(roster, 'posts/000_a_data_science_journey/data/historic/roster_historic.parquet')
+write_parquet(roster, '000_a_data_science_journey/data/historic/roster_historic.parquet')
 
 
 # Snap Counts 
@@ -63,14 +66,14 @@ for (s in 1:length(seasons)) {
   }
 }
 
-write_parquet(snap_counts, 'posts/000_a_data_science_journey/data/historic/snap_counts_historic.parquet')
+write_parquet(snap_counts, '000_a_data_science_journey/data/historic/snap_counts_historic.parquet')
 
 
 # Draft Picks 
 print("Draft Picks Data")
 write_parquet(
   read_rds('https://github.com/nflverse/nflverse-data/releases/download/draft_picks/draft_picks.rds'), 
-  'posts/000_a_data_science_journey/data/historic/draft_picks.parquet')
+  '000_a_data_science_journey/data/historic/draft_picks.parquet')
 
 
 # Injuries
@@ -90,14 +93,14 @@ for (s in 1:length(seasons)) {
   }
 }
 
-write_parquet(injuries, 'posts/000_a_data_science_journey/data/historic/injuries_historic.parquet')
+write_parquet(injuries, '000_a_data_science_journey/data/historic/injuries_historic.parquet')
 
 
 # Combine
 print("Combine Data")
 write_parquet(
   read_rds('https://github.com/nflverse/nflverse-data/releases/download/combine/combine.rds'), 
-  'posts/000_a_data_science_journey/data/historic/combine.parquet')
+  '000_a_data_science_journey/data/historic/combine.parquet')
 
 
 # Contracts
@@ -106,7 +109,12 @@ contracts <- read_rds('https://github.com/nflverse/nflverse-data/releases/downlo
 
 # # Summary 
 contracts_summary <- contracts %>% select(-season_history)
-write_parquet(contracts_summary, 'posts/000_a_data_science_journey/data/historic/contracts_summary.parquet')
+write_parquet(contracts_summary, '000_a_data_science_journey/data/historic/contracts_summary.parquet')
+
+
+rm(list = ls())
+
+
 
 # # # Detail 
 # contracts_detail <- NULL
@@ -124,6 +132,6 @@ write_parquet(contracts_summary, 'posts/000_a_data_science_journey/data/historic
 # 
 # }
 # 
-# write_parquet(contracts_detail, 'posts/000_a_data_science_journey/data/historic/contracts_detail.parquet')
+# write_parquet(contracts_detail, '000_a_data_science_journey/data/historic/contracts_detail.parquet')
 
 
